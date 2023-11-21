@@ -1,32 +1,30 @@
-use phper::{echo, functions::Argument, modules::Module, php_get_module, values::ZVal};
+pub mod client;
+pub mod errors;
+pub mod request;
+pub mod response;
 
-/// The php function, receive arguments with type `ZVal`.
-fn say_hello(arguments: &mut [ZVal]) -> phper::Result<()> {
-    // Get the first argument, expect the type `ZStr`, and convert to Rust utf-8
-    // str.
-    let name = arguments[0].expect_z_str()?.to_str()?;
+use crate::{
+    client::{make_client_builder_class, make_client_class},
+    errors::make_exception_class,
+    request::make_request_builder_class,
+    response::make_response_class,
+};
 
-    // Macro which do php internal `echo`.
-    echo!("Hello, {}!\n", name);
+use phper::{modules::Module, php_get_module};
 
-    Ok(())
-}
-
-/// This is the entry of php extension, the attribute macro `php_get_module`
-/// will generate the `extern "C" fn`.
 #[php_get_module]
 pub fn get_module() -> Module {
-    // New `Module` with extension info.
     let mut module = Module::new(
-        env!("CARGO_PKG_NAME"),
+        env!("CARGO_CRATE_NAME"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_PKG_AUTHORS"),
     );
 
-    // Register function `say_hello`, with one argument `name`.
-    module
-        .add_function("say_hello", say_hello)
-        .argument(Argument::by_val("name"));
+    module.add_class(make_exception_class());
+    module.add_class(make_client_class());
+    module.add_class(make_client_builder_class());
+    module.add_class(make_request_builder_class());
+    module.add_class(make_response_class());
 
     module
 }
