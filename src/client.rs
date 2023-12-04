@@ -3,7 +3,10 @@ use phper::{
     classes::{ClassEntity, StaticStateClass, Visibility},
     functions::Argument,
 };
-use reqwest::blocking::{Client, ClientBuilder};
+use reqwest::{
+    blocking::{Client, ClientBuilder},
+    header::{ACCEPT, CONTENT_TYPE},
+};
 use std::{convert::Infallible, mem::take, time::Duration};
 
 use crate::errors::HttpClientError;
@@ -68,8 +71,11 @@ pub fn make_client_class() -> ClassEntity<Option<Client>> {
     class
         .add_method("get", Visibility::Public, |this, arguments| {
             let url = arguments[0].expect_z_str()?.to_str().unwrap();
-            let client = this.as_state().as_ref().unwrap();
-            let request_builder = client.get(url);
+            let client: &Client = this.as_state().as_ref().unwrap();
+            let request_builder = client
+                .get(url)
+                .header(ACCEPT, "application/json")
+                .header(CONTENT_TYPE, "application/json");
             let mut object = REQUEST_BUILDER_CLASS.init_object()?;
             *object.as_mut_state() = Some(request_builder);
             Ok::<_, phper::Error>(object)
