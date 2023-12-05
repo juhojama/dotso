@@ -4,8 +4,8 @@ use phper::{
     functions::Argument,
 };
 use reqwest::{
-    blocking::{Client, ClientBuilder},
-    header::{ACCEPT, CONTENT_TYPE},
+    blocking::{Client, ClientBuilder, RequestBuilder},
+    header::{HeaderValue, ACCEPT, CONTENT_TYPE},
 };
 use std::{convert::Infallible, mem::take, time::Duration};
 
@@ -58,6 +58,13 @@ pub fn make_client_builder_class() -> ClassEntity<ClientBuilder> {
     class
 }
 
+fn set_headers(mut builder: RequestBuilder) -> RequestBuilder {
+    builder = builder
+        .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
+        .header(ACCEPT, HeaderValue::from_static("application/json"));
+    builder
+}
+
 pub fn make_client_class() -> ClassEntity<Option<Client>> {
     let mut class =
         ClassEntity::<Option<Client>>::new_with_default_state_constructor(HTTP_CLIENT_CLASS_NAME);
@@ -72,10 +79,8 @@ pub fn make_client_class() -> ClassEntity<Option<Client>> {
         .add_method("get", Visibility::Public, |this, arguments| {
             let url = arguments[0].expect_z_str()?.to_str().unwrap();
             let client: &Client = this.as_state().as_ref().unwrap();
-            let request_builder = client
-                .get(url)
-                .header(ACCEPT, "application/json")
-                .header(CONTENT_TYPE, "application/json");
+            let mut request_builder = client.get(url);
+            request_builder = set_headers(request_builder);
             let mut object = REQUEST_BUILDER_CLASS.init_object()?;
             *object.as_mut_state() = Some(request_builder);
             Ok::<_, phper::Error>(object)
