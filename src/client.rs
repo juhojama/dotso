@@ -91,7 +91,8 @@ pub fn make_client_class() -> ClassEntity<Option<Client>> {
         .add_method("post", Visibility::Public, |this, arguments| {
             let url = arguments[0].expect_z_str()?.to_str().unwrap();
             let client = this.as_state().as_ref().unwrap();
-            let request_builder = client.post(url);
+            let mut request_builder = client.post(url);
+            request_builder = set_headers(request_builder);
             let mut object = REQUEST_BUILDER_CLASS.init_object()?;
             *object.as_mut_state() = Some(request_builder);
             Ok::<_, phper::Error>(object)
