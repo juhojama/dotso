@@ -23,7 +23,11 @@ class Response
 
 class CouchDB
 {
-    public function __construct(string $databaseHost)
+    public function __construct(string $url, $client)
+    {
+    }
+
+    public function get(string $database, string $id)
     {
     }
 }
