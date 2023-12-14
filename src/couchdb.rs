@@ -39,4 +39,20 @@ pub fn make_couchdb_class() -> ClassEntity<()> {
         .argument(Argument::by_val("client"));
 
     class
+        .add_method(
+            "get",
+            Visibility::Public,
+            move |this, _arguments| -> phper::Result<ZVal> {
+                let url = this.get_property("url");
+
+                // 1. Get the HTTP client
+                // 2. Call database in url
+                // 3. Return results
+
+                Ok::<_, Error>(url.clone())
+            },
+        )
+        .argument(Argument::by_val("database"))
+        .argument(Argument::by_val("id"));
+    class
 }
