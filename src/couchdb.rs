@@ -11,6 +11,10 @@ use std::convert::Infallible;
 
 const COUCHDB_CLASS_NAME: &str = "Dotso\\CouchDB";
 
+struct CouchDB {}
+
+impl CouchDB {}
+
 pub fn make_couchdb_class() -> ClassEntity<()> {
     let mut class = ClassEntity::new(COUCHDB_CLASS_NAME);
 
@@ -42,14 +46,25 @@ pub fn make_couchdb_class() -> ClassEntity<()> {
         .add_method(
             "get",
             Visibility::Public,
-            move |this, _arguments| -> phper::Result<ZVal> {
-                let url = this.get_property("url");
+            move |this: &mut phper::objects::StateObj<()>,
+                  _arguments: &mut [ZVal]|
+                  -> phper::Result<ZVal> {
+                let url: &ZVal = this.get_property("url");
 
-                // 1. Get the HTTP client
-                // 2. Call database in url
-                // 3. Return results
+                let mut client: ZObject = this
+                    .get_property("client")
+                    .clone()
+                    .expect_mut_z_obj()
+                    .unwrap()
+                    .to_ref_owned();
 
-                Ok::<_, Error>(url.clone())
+                let mut prop_request: ZVal = client.call("get", &mut [url.clone()])?;
+                let request: &mut ZObj = prop_request.as_mut_z_obj().unwrap();
+                let mut prop_response = request.call("send", [])?;
+                let response: &mut ZObj = prop_response.as_mut_z_obj().unwrap();
+                let result = response.call("body", [])?;
+
+                Ok::<_, Error>(result.clone())
             },
         )
         .argument(Argument::by_val("database"))
