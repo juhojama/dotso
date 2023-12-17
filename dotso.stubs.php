@@ -21,6 +21,27 @@ class Response
     }
 }
 
+
+class HttpClientBuilder
+{
+    public function __construct()
+    {
+    }
+
+    public function timeout(int $timeout): object
+    {
+        return $this;
+    }
+
+    public function cookie_store(bool $store)
+    {
+    }
+
+    public function build()
+    {
+    }
+}
+
 class CouchDB
 {
     public function __construct(string $url, $client)
