@@ -12,9 +12,9 @@ use std::{convert::Infallible, mem::take, time::Duration};
 use crate::errors::HttpClientError;
 use crate::request::REQUEST_BUILDER_CLASS;
 
-const HTTP_CLIENT_BUILDER_CLASS_NAME: &str = "HttpClient\\HttpClientBuilder";
+const HTTP_CLIENT_BUILDER_CLASS_NAME: &str = "Dotso\\HttpClientBuilder";
 
-const HTTP_CLIENT_CLASS_NAME: &str = "HttpClient\\HttpClient";
+const HTTP_CLIENT_CLASS_NAME: &str = "Dotso\\HttpClient";
 
 // The static StaticStateClass is bound to ClassEntity of HttpClient, When the class registered,
 // the StaticStateClass will be initialised, so you can use it to initialise stateful objects, etc.
