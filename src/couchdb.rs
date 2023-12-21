@@ -11,9 +11,9 @@ use std::convert::Infallible;
 
 const COUCHDB_CLASS_NAME: &str = "Dotso\\CouchDB";
 
-struct CouchDB {}
+struct _CouchDB {}
 
-impl CouchDB {}
+impl _CouchDB {}
 
 pub fn make_couchdb_class() -> ClassEntity<()> {
     let mut class = ClassEntity::new(COUCHDB_CLASS_NAME);
@@ -47,9 +47,13 @@ pub fn make_couchdb_class() -> ClassEntity<()> {
             "get",
             Visibility::Public,
             move |this: &mut phper::objects::StateObj<()>,
-                  _arguments: &mut [ZVal]|
+                  arguments: &mut [ZVal]|
                   -> phper::Result<ZVal> {
-                let url: &ZVal = this.get_property("url");
+                let binding: ZVal = this.get_property("url").clone();
+                let url: &str = binding.expect_z_str()?.to_str()?;
+                let database: &str = arguments[0].expect_z_str()?.to_str()?;
+                let id: &str = arguments[1].expect_z_str()?.to_str()?;
+                let s_str: ZVal = ZVal::from(format!("{}/{}/{}", url, database, id).as_str());
 
                 let mut client: ZObject = this
                     .get_property("client")
@@ -58,11 +62,11 @@ pub fn make_couchdb_class() -> ClassEntity<()> {
                     .unwrap()
                     .to_ref_owned();
 
-                let mut prop_request: ZVal = client.call("get", &mut [url.clone()])?;
+                let mut prop_request: ZVal = client.call("get", &mut [s_str])?;
                 let request: &mut ZObj = prop_request.as_mut_z_obj().unwrap();
-                let mut prop_response = request.call("send", [])?;
+                let mut prop_response: ZVal = request.call("send", [])?;
                 let response: &mut ZObj = prop_response.as_mut_z_obj().unwrap();
-                let result = response.call("body", [])?;
+                let result: ZVal = response.call("body", [])?;
 
                 Ok::<_, Error>(result.clone())
             },
